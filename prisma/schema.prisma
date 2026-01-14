@@ -1,0 +1,27 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// 定义一个 "模型" (Model)，这就相当于数据库里的一张表
+model Transaction {
+   id      String   @id @default(uuid())
+  label     String
+  amount    Int
+  
+  // 给 date 也加个默认值，防止以后它也报错
+  date      DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  
+  // 🚨 关键修改在这里：
+  // 加上 @default(now())，保证创建时有值
+  // 保留 @updatedAt，保证更新时自动变
+  updatedAt DateTime @default(now()) @updatedAt
+}

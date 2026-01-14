@@ -6,9 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:sqlStudio": "npx prisma studio"
   },
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.2.0",
+    "@prisma/adapter-libsql": "^7.2.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "@prisma/client-runtime-utils": "^7.2.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -18,8 +24,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "prisma": "^7.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
