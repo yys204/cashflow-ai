@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # 你的 CashFlow AI 应用
+  app:
+    container_name: cashflow-app
+    build: .
+    restart: always
+    ports:
+      - "3000:3000" # 把容器的3000端口映射到服务器的3000
+    environment:
+      # 🚨 注意：这里的主机名是 'db'，对应下面的服务名
+      DATABASE_URL: "postgresql://postgres:mysecretpassword@db:5432/cashflow?schema=public"
+      # 记得填你的 DeepSeek Key
+      DEEPSEEK_API_KEY: "sk-876e7de89b754894a559ad7087652efd"
+      DEEPSEEK_BASE_URL: "https://api.deepseek.com/v1"
+    depends_on:
+      - db
+
+  # 免费的数据库 (PostgreSQL)
+  db:
+    container_name: cashflow-db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword # 自己改个复杂的密码
+      POSTGRES_DB: cashflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # 数据持久化，重启不丢失
+
+volumes:
+  postgres_data:
