@@ -13,11 +13,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Prisma generate 不需要真连数据库，但需要读取配置，所以给个假的骗过它
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV DATABASE_URL=="postgresql://dummy:dummy@localhost:5432/dummy"
 # 生成 Prisma Client
 RUN npx prisma generate
 # 构建 Next.js 应用  加上 --no-lint 跳过检查
-RUN npm install -g pnpm && npx next build --no-lint --no-mangling
+RUN npm install -g pnpm && npx next build 
 
 # 3. 运行阶段 (生产环境)
 FROM base AS runner
