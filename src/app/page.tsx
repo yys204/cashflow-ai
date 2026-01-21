@@ -4,10 +4,12 @@ import AiInput from "@/components/AiInput";
 import TrendChart from "@/components/TrendChart";
 import { deleteTransaction } from "@/app/actions";
 import { Wallet, TrendingUp, TrendingDown, History, Plus } from "lucide-react"; // 引入图标
-
+import { auth } from "@/auth"; // 👈 引入 auth
+import UserHeader from "@/components/UserHeader"; // 👈 引入新组件
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
+  const session = await auth(); // 👈 获取当前登录用户信息
   const [transactions, summary] = await Promise.all([
     getTransactions(),
     getSummary()
@@ -23,9 +25,7 @@ export default async function Home() {
             <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">CashFlow AI</h1>
             <p className="text-gray-500 mt-1">你的 2026 智能财务助手</p>
           </div>
-          <div className="bg-white p-2 rounded-full shadow-sm border border-gray-100">
-            <Wallet className="w-6 h-6 text-black" />
-          </div>
+          <UserHeader email={session?.user?.email} />
         </header>
 
         {/* 1. 资产概览卡片 (Bento Grid 风格) */}

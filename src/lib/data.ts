@@ -1,11 +1,16 @@
 import { prisma } from "@/lib/prisma";
-
+import { auth } from "@/auth"; // 引入 auth
 export async function getTransactions() {
+  const session = await auth();
+  if (!session?.user?.id) return []; // 没登录就返回空
   // 1. 使用 prisma 查询数据库
   // findMany = 查找多条
   // orderBy = 排序
   // 2. 返回查询结果
   const transactions = await prisma.transaction.findMany({
+    where: {
+      userId: session.user.id, // 🚨 只能查自己的！
+    },
     orderBy: {
       date: 'desc' // 按日期倒序
     }
@@ -15,7 +20,21 @@ export async function getTransactions() {
 }
 
 export async function getSummary() {
-  const transactions = await prisma.transaction.findMany();
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      income: 0,
+      expense: 0,
+      balance: 0,
+      recentTrend: []
+    };
+  }
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId: session.user.id, // 🚨 只能查自己的！
+    },
+    orderBy: { date: "desc" }, // 为了计算趋势，先取最新的
+  });
 
   // 计算总收入和总支出
   const income = transactions

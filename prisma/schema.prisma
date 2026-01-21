@@ -7,7 +7,17 @@ datasource db {
   provider = "postgresql"
   // 🚨 这一行必须删掉/留空！
 }
-
+//  用户表
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // 存哈希后的密码，不是明文！
+  createdAt DateTime @default(now())
+  
+  // 关系：一个用户有很多账目
+  transactions Transaction[]
+}
+// 账目表
 model Transaction {
   id        Int      @id @default(autoincrement())
   label     String
@@ -15,4 +25,6 @@ model Transaction {
   date      DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userId    String 
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

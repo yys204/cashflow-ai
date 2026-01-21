@@ -3,9 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
+import { auth } from "@/auth";
 // 这个函数虽然写在前端文件旁，但它只在服务器运行
 export async function addTransaction(formData: FormData) {
+  const session = await auth();
+  console.log(session,'session');
+  if (!session?.user?.id) return; // 没登录不许写
   // 1. 从表单数据中提取值
   const label = formData.get("label") as string;
   const amountRaw = formData.get("amount") as string;
@@ -21,7 +24,7 @@ export async function addTransaction(formData: FormData) {
       data: {
         label,
         amount: Number(amountRaw), // 转成数字
-        // id, date, createdAt 等由数据库自动生成
+        userId: session.user.id, // 🚨 写入时必须打上用户标签
       },
     });
 
@@ -36,9 +39,11 @@ export async function addTransaction(formData: FormData) {
 }
 
 // 删除功能顺手也写了
-export async function deleteTransaction(id: string) {
+export async function deleteTransaction(id: any) {
+  const session = await auth();
+  if (!session?.user?.id) return; // 没登录不许写
   await prisma.transaction.delete({
-    where: { id },
+    where: { id,userId: session.user.id },
   });
   revalidatePath("/"); // 刷新页面
 }
