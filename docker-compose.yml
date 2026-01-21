@@ -1,31 +1,57 @@
-services:
-  # 你的 CashFlow AI 应用
-  app:
-    container_name: cashflow-app
-    build: .
-    restart: always
-    ports:
-      - "3000:3000" # 把容器的3000端口映射到服务器的3000
-    environment:
-      # 🚨 注意：这里的主机名是 'db'，对应下面的服务名
-      DATABASE_URL: "postgresql://postgres:mysecretpassword@db:5432/cashflow?schema=public"
-      # 记得填你的 DeepSeek Key
-      DEEPSEEK_API_KEY: "sk-876e7de89b754894a559ad7087652efd"
-      DEEPSEEK_BASE_URL: "https://api.deepseek.com/v1"
-    depends_on:
-      - db
+version: "3.9"
 
-  # 免费的数据库 (PostgreSQL)
+services:
+  # 1. 数据库服务
   db:
     container_name: cashflow-db
     image: postgres:15-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysecretpassword # 自己改个复杂的密码
+      POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: cashflow
     volumes:
-      - postgres_data:/var/lib/postgresql/data # 数据持久化，重启不丢失
+      - postgres_data:/var/lib/postgresql/data
+    # 🌟 健康检查：确保数据库真的启动了，才让别人连
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. 专门负责建表的"工程车"
+  migrate:
+    container_name: cashflow-migrate
+    build:
+      context: .
+      # 🚨 核心修改：指定使用 'builder' 阶段！
+      # builder 阶段有完整的 node_modules 和 pnpm，绝对不会报 command not found
+      target: builder
+    # 覆盖默认启动命令，只做迁移这一件事
+    command: npx prisma migrate deploy
+    environment:
+      # 必须给它数据库地址
+      DATABASE_URL: "postgresql://postgres:mysecretpassword@db:5432/cashflow?schema=public"
+    depends_on:
+      db:
+        condition: service_healthy # 等数据库健康了再跑
+    restart: "no" # 跑完就自杀退出，不占用资源
+
+  # 3. Next.js 应用
+  app:
+    container_name: cashflow-app
+    build: .
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:mysecretpassword@db:5432/cashflow?schema=public"
+      DEEPSEEK_API_KEY: "sk-876e7de89b754894a559ad7087652efd"
+      DEEPSEEK_BASE_URL: "https://api.deepseek.com/v1"
+    depends_on:
+      # 🌟 关键依赖：等 migrate 跑完了，App 再启动
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:
