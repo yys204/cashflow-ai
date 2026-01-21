@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 你的 CashFlow AI 应用
   app:

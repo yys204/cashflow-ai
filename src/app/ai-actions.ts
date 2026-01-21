@@ -4,7 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { generateText } from "ai"; // 
 import { addTransaction } from "./actions";
 
-// 1. 初始化 DeepSeek (配置保持不变)
+//  初始化 DeepSeek 
 const deepseek = createOpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY,
   baseURL: process.env.DEEPSEEK_BASE_URL,

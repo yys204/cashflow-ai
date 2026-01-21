@@ -1,0 +1,17 @@
+services:
+  # 专门给本地开发用的数据库
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: cashflow-local-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password  # 本地密码简单点没事
+      POSTGRES_DB: cashflow_dev
+    ports:
+      - "5432:5432" # 把数据库端口暴露给你的电脑
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_dev_data:
